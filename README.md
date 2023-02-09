@@ -6,8 +6,8 @@
 http://shop.000081.xyz/
 
 ## 后台（PC端）地址：
-http://shopadmin.000081.xyz/
-测试账号：admin
+http://shopadmin.000081.xyz/<br>
+测试账号：admin<br>
 测试密码：admin
 
 # docker镜像以及构建文件：
