@@ -48,3 +48,12 @@ docker-compose up -d
  ⠿ Container swoft1          Started                                                                                                 7.1s
  ⠿ Container nginx0          Started                                                                                                 8.1s
 ```
+
+## 连接数据库并且导入数据
+等待mysql主从复制容器启动完毕后导入数据库  
+数据库地址：localhost:3306  
+用户：root  
+密码：000000  
+数据库：shop  
+导入shop.sql文件
+
