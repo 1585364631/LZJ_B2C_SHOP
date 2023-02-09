@@ -10,6 +10,25 @@ http://shopadmin.000081.xyz/
 测试账号：admin  
 测试密码：admin
 
+# 容器项目构成
+## consul
+consul 注册中心集群
+
+## redis
+redis 主从复制并且开启哨兵模式
+
+## mariadb
+mariadb 主从复制
+
+## mycat
+mycat 读写分离
+
+## swoft
+swoft 后端节点分布式部署
+
+## nginx
+nginx 自动获取consul注册中心信息，并且使用微博平均负载分担模块判断访问的节点
+
 # 项目运行
 ## docker镜像以及构建文件：
 由于github单文件限制只能100mb，所以docker镜像文件和镜像构建文件使用阿里云盘
