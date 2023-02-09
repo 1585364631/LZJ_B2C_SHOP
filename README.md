@@ -1,5 +1,5 @@
 # LZJ_B2C_SHOP
-本项目为B2C商城系统，初步接触微服务，前端分为前台和后台，前台（移动端）使用Vue3+Axios+Router等技术开发，后台（电脑端）使用Vue3+Axios+Router+Element UI Plus开发，后端使用PHP的Swoft微服务框架开发，项目运行为docker容器，使用docker-compose编排
+本项目为B2C商城系统，初步接触微服务，前端分为前台和后台，前台（移动端）使用Vue3+Axios+Router等技术开发，后台（电脑端）使用Vue3+Axios+Router+Element UI Plus开发，后端使用PHP的Swoft微服务框架开发，部署环境为consul注册中心集群，redis主从复制和哨兵模式，mysql读写分离与主从复制，nginx平均负载分担等，项目运行为docker容器，使用docker-compose编排
 
 # 测试地址
 ## 前台（移动端，浏览器可使用F12功能选择移动样式）地址：
