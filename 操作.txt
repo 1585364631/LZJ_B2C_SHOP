@@ -1,0 +1,44 @@
+后端架设：
+推荐后端服务器配置：8核心8G运行内存
+系统安装docker和docker-compose3.9
+
+使用命令导入docker文件夹下镜像文件夹下压缩包
+docker load -i shopimg.tar
+
+解压docker文件夹下shop.zip文件
+unzip shop.zip
+
+进入shop目录使用docker-compose启动容器
+docker-compose up -d
+
+等待mysql主从复制容器启动完毕后导入数据库
+localhost:3306
+用户：root
+密码：000000
+数据库：shop
+导入shop.sql文件
+
+
+前端架设：
+安装node.js
+lzj_shop为前台代码，shopadmin为后台代码
+
+使用命令安装框架所需依赖
+npm install
+
+将前端代码全局替换接口地址
+替换前：47.106.68.150:81
+替换后：后端所在服务器的IP地址
+
+打包源代码
+npm run build
+
+将源代码部署在任意web服务器上即可，前台和后端需要域隔离。
+
+图床自行部署（网站和cdn都可）
+图床地址自行替换
+原地址：static.000081.xyz/img
+
+后台默认账号密码：
+账号：admin
+密码：admin

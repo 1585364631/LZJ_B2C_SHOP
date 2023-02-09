@@ -1,0 +1,243 @@
+version: "3.9"
+
+networks:
+  net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: "10.20.30.0/24"
+    
+services:
+
+# consul集群
+  consul0:
+    image: consul
+    environment:
+      CONSUL_BIND_INTERFACE: eth0
+    command: "agent -server -client=0.0.0.0 -bootstrap-expect=3 -node=consul-console -datacenter=dc1"
+    container_name: consul0
+    restart: always
+    networks:
+      net:
+
+  consul1:
+    image: consul
+    depends_on:
+      - "consul0"
+    restart: always
+    environment:
+      CONSUL_BIND_INTERFACE: eth0
+    command: "agent -server -client=0.0.0.0 -retry-join=consul0 -node=consul1 -datacenter=dc1"
+    container_name: consul1
+    networks:
+      net:
+
+  consul2:
+    image: consul
+    depends_on:
+      - "consul0"
+    environment:
+      CONSUL_BIND_INTERFACE: eth0
+    command: "agent -server -client=0.0.0.0 -retry-join=consul0 -node=consul2 -datacenter=dc1"
+    container_name: consul2
+    restart: always
+    networks:
+      net:
+
+  consulclien0:
+    image: consul
+    depends_on:
+      - "consul0"
+    environment:
+      CONSUL_BIND_INTERFACE: eth0
+    container_name: consulclien0
+    ports:
+      - 8500:8500
+    restart: always
+    networks:
+      net:
+    command: "agent -client=0.0.0.0 -retry-join=consul0 -ui -node=consul-clien0 -datacenter=dc1"  
+
+  consulclien1:
+    image: consul
+    depends_on:
+      - "consul0"
+    environment:
+      CONSUL_BIND_INTERFACE: eth0
+    ports:
+      - 8501:8500
+    command: "agent -client=0.0.0.0 -retry-join=consul0 -ui -node=consul-clien1 -datacenter=dc1"
+    container_name: consulclien1
+    restart: always
+    networks:
+      net:
+
+
+# swoft框架
+  swoft0:
+    depends_on:
+      - "consul0"
+      - "consul1"
+      - "consul2"
+      - "consulclien0"
+      - "consulclien1"
+    image: swoft/swoft
+    ports:
+      - "18300:18306"
+    volumes:
+      - "./swoft:/var/www/swoft"
+    user: root
+    environment:
+      - CACHE_PORT=18306
+      - CACHE_IP=10.20.30.240
+    container_name: swoft0
+    restart: always
+    networks:
+      net:
+        ipv4_address: 10.20.30.240
+
+  swoft1:
+    depends_on:
+      - "consul0"
+      - "consul1"
+      - "consul2"
+      - "consulclien0"
+      - "consulclien1"
+    user: root
+    image: swoft/swoft
+    ports:
+      - "18301:18306"
+    volumes:
+      - "./swoft:/var/www/swoft"
+    environment:
+      - CACHE_PORT=18306
+      - CACHE_IP=10.20.30.230
+    container_name: swoft1
+    command: "php /var/www/swoft/bin/swoft http:start"
+    networks:
+      net:
+        ipv4_address: 10.20.30.230
+    restart: always
+
+  swoft2:
+    depends_on:
+      - "consul0"
+      - "consul1"
+      - "consul2"
+      - "consulclien0"
+      - "consulclien1"
+    user: root
+    image: swoft/swoft
+    ports:
+      - "18302:18306"
+    volumes:
+      - "./swoft:/var/www/swoft"
+    environment:
+      - CACHE_PORT=18306
+      - CACHE_IP=10.20.30.250
+    container_name: swoft2
+    command: "php /var/www/swoft/bin/swoft http:start"
+    networks:
+      net:
+        ipv4_address: 10.20.30.250
+    restart: always
+
+
+#  nginx负载均衡
+  nginx0:
+    depends_on:
+      - "swoft0"
+      - "swoft1"
+    image: nginx:shop
+    ports:
+      - "80:80"
+    user: root
+    container_name: nginx0
+    networks:
+      net:
+    restart: always
+
+# mysql主从
+  mariadb_master:
+    container_name: mariadb_master
+    ports:
+      - "3306:3306"
+    user: root
+    image: mariadb:master
+    container_name: mariadb_master
+    volumes:
+     - "./backup:/backup"
+    networks:
+      net:
+    restart: always
+
+  mariadb_slave:
+    container_name: mariadb_slave
+    ports:
+      - "3307:3306"
+    user: root
+    image: mariadb:slave
+    container_name: mariadb_slave
+    volumes:
+     - "./backup:/backup"
+    networks:
+      net:
+    restart: always
+
+#mysql读写分离
+  mycat:
+    container_name: mycat
+    ports:
+      - "8066:8066"
+      - "9066:9066"
+    user: root
+    image: mycat:shop
+    networks:
+      net:
+    volumes:
+     - "./backup:/backup"
+    restart: always
+
+#redis集群
+  redis_master:
+    container_name: redis_master
+    ports:
+      - "6379:6379"
+      - "16379:16379"
+      - "26379:26379"
+    restart: always
+    image: redis:shop
+    networks:
+      net:
+    volumes:
+      - "./redis/redis-master/redis.conf:/etc/redis.conf"
+      - "./redis/redis-master/redis-sentinel.conf:/etc/redis-sentinel.conf"
+
+  redis_client0:
+    container_name: redis_client0
+    ports:
+      - "6380:6379"
+      - "16380:16379"
+      - "26380:26379"
+    restart: always
+    image: redis:shop
+    networks:
+      net:
+    volumes:
+      - "./redis/redis-client0/redis.conf:/etc/redis.conf"
+      - "./redis/redis-client0/redis-sentinel.conf:/etc/redis-sentinel.conf"
+ 
+
+  redis_client1:
+    container_name: redis_client1
+    ports:
+      - "6381:6379"
+      - "16381:16379"
+      - "26381:26379"
+    restart: always
+    image: redis:shop
+    networks:
+      net:
+    volumes:
+      - "./redis/redis-client1/redis.conf:/etc/redis.conf"
+      - "./redis/redis-client1/redis-sentinel.conf:/etc/redis-sentinel.conf"
